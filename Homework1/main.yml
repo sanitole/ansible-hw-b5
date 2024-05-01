@@ -1,0 +1,11 @@
+- hosts: 134.209.173.42
+  task:
+  - name: Install a list of packages
+    apt:
+      pkg:
+      - apache2
+      - tree
+      - git
+  state: present
+
+  
