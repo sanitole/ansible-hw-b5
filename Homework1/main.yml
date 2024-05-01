@@ -1,11 +1,15 @@
-- hosts: 134.209.173.42
-  task:
+- hosts: localhost
+  tasks:
   - name: Install a list of packages
     apt:
-      pkg:
-      - apache2
-      - tree
-      - git
-  state: present
-
+      pkg: 
+        - apache2
+        - git
+        - tree
+      state: latest
   
+  - name: Start service apache, if not started
+    service:
+      name: apache2
+      state: started
+      enabled: yes
