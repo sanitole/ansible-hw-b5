@@ -1,0 +1,12 @@
+
+- name: Install dependencies for WordPress
+  yum:
+    name:
+      - php
+      - php-mysql
+    state: present
+
+- name: Upgrade all packages
+  yum: 
+    name: '*'
+    state: latest
