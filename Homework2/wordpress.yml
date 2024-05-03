@@ -1,12 +1,28 @@
+- name: Download Wordpress
+  ansible.builtin.get_url:
+    url: https://wordpress.org/latest.tar.gz
+    dest: /var/www/
+     mode: '0644'
+  when: file_check.stat.exists == false
 
-- name: Install dependencies for WordPress
-  yum:
-    name:
-      - php
-      - php-mysql
-    state: present
+- name: Extract wordpress.tar.gz
+  ansible.builtin.unarchive:
+    src: wordpress/*
+    dest: /var/www/html
+    remote_src: yes
+  when: file_check.stat.exists == false
 
-- name: Upgrade all packages
-  yum: 
-    name: '*'
-    state: latest
+- name: Move extracted files
+  ansible.builtin.copy:
+    src: /var/www/wordpress/*
+    dest: /var/www/html
+    remote_src: true
+    owner: www-data
+    group: www-data
+
+- name: Run a command as the apache user
+  command: chown -R apache:apache /var/www/html/
+  become: yes
+  become_user: apache
+
+
