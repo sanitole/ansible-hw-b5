@@ -1,12 +1,18 @@
-- name: Install dependencies for WordPress
-  yum:
-    name:
-      - php
-      - php-mysql
-    state: present
-  become: yes
+- hosts: all
+  tasks:
+  - name: Install dependencies for WordPress
+    yum:
+      name:
+        - php
+        - php-mysql
+      state: present
+    become: yes
+    when: 
 
-- name: Upgrade all packages
-  yum: 
-    name: '*'
-    state: latest
+  - name: Upgrade all packages
+    yum: 
+      name: '*'
+      state: latest
+    
+
+ 

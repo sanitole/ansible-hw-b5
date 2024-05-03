@@ -1,28 +1,53 @@
-- name: Download Wordpress
-  ansible.builtin.get_url:
-    url: https://wordpress.org/latest.tar.gz
-    dest: /var/www/
-     mode: '0644'
-  when: file_check.stat.exists == false
+- hosts: all
+  tasks:
+    - name: Create a directory
+      file:
+        path: /src/var/www/html/
+        state: directory
+        owner: apache
+        group: apache
+        mode: '0755'
+    
+    - name: Check the file 
+      stat:
+        path: /src/var/www/html/wp-settings.php
+      register: file_check
 
-- name: Extract wordpress.tar.gz
-  ansible.builtin.unarchive:
-    src: wordpress/*
-    dest: /var/www/html
-    remote_src: yes
-  when: file_check.stat.exists == false
+    - name: Download Wordpress
+      get_url:
+        url: https://wordpress.org/latest.tar.gz
+        dest: /tmp/latest.tar.gz
+      when: file_check.stat.exists == false
 
-- name: Move extracted files
-  ansible.builtin.copy:
-    src: /var/www/wordpress/*
-    dest: /var/www/html
-    remote_src: true
-    owner: www-data
-    group: www-data
+    - name: Extract wordpress.latest.tar.gz
+      unarchive:
+        src: tmp/latest.tar.gz
+        dest: /var/www/html/
+        owner: root
+        group: root
+        remote_src: yes
+      notify: Restare Apache
+      when: file_check.stat.exists == false
 
-- name: Run a command as the apache user
-  command: chown -R apache:apache /var/www/html/
-  become: yes
-  become_user: apache
+  handlers:
+    - name: Restart apache
+      service:
+        name: httpd
+        state: restarted 
 
+    - name: Move extracted files
+      copy:
+        src: wordpress/*
+        dest: /var/www/html/
+        remote_src: true
+        owner: apache
+        group: apache
+        mode: '0644'
+
+    - name: Run a command as the apache user
+      command: chown -R apache:apache /var/www/html/
+      become: yes
+      become_user: apache
+
+    
 

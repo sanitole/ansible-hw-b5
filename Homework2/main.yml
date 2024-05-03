@@ -1,18 +1,19 @@
 - hosts: all
-  sudo: yes
+  become: true
   tasks:
-  - name : Install multiple packages
+  - name: Install multiple packages
     yum: 
       name: "{{ item }}"
       state: present 
       update_cache: yes
-      notify: Restart apache
+    notify: Restart apache
     loop:
       - httpd
       - wget 
       - unzip 
       - epel-release  
       - mysql 
+    when: 
 
   - name: Start service httpd, if not started
     service:
@@ -20,15 +21,9 @@
       state: started
       enabled: yes
 
-  handlers:
-  - name: Restart apache
-    service:
-      name: httpd
-      state: restarted
-
   - name: Gather Package facts
     package_facts: manager=auto
-  - name : Validate whether multiple packages are installed or not.
+  - name: Validate whether multiple packages are installed or not.
     debug: msg="Packages are installed"
     when: "{{ item }}' in ansible_facts.packages"
 
