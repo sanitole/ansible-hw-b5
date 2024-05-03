@@ -44,6 +44,5 @@
       dest: "~/"
 
 
-# Notes
 # --syntax-check  
 # ansible-playbook -b users.yml #mind -b for sudo   
