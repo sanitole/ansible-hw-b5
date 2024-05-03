@@ -1,4 +1,4 @@
-- hosts: localhost
+- hosts: all
   tasks:
   - name: Install a list of packages
     apt:
@@ -22,16 +22,15 @@
     loop:
       - kaizen
       - devops
-      - qa             # ansible-playbook groups.yml 
+      - qa            
     become: yes
       
-
   - name: Create user and add to group
     user: 
       name: saniya
       groups: kaizen,qa
       append: yes
-    become: yes        # ansible-playbook -b users.yml #mind -b for sudo   
+    become: yes        
   
   - name: Create user and add to group
     user: 
@@ -41,7 +40,10 @@
    
   - name: Copy file to remote host
     copy:
-      src: /root/ansible-hw-b5/Homework1/main.yml
+      src: "./"
       dest: "~/"
 
+
+# Notes
 # --syntax-check  
+# ansible-playbook -b users.yml #mind -b for sudo   
