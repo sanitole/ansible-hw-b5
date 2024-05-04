@@ -6,27 +6,84 @@
       name: "{{ item }}"
       state: present 
       update_cache: yes
-    notify: Restart apache
     loop:
       - httpd
       - wget 
       - unzip 
       - epel-release  
       - mysql 
-    when: 
 
-  - name: Start service httpd, if not started
+  # - name: Validate whether multiple packages are installed or not.
+  #   debug: msg="Packages are installed"
+  #   when: "{{ item }}' in ansible_facts.packages"
+  
+  - name: Install dependencies for WordPress
+    yum:
+      name: "{{ item }}"
+      state: present
+    become: yes
+    loop:
+      - php
+      - php-mysql
+
+  # - name: Upgrade all packages
+  #   yum: 
+  #     name: '*'
+  #     state: latest
+
+  - name: Install EPEL repo.
+    yum:
+      name: https://rpms.remirepo.net/enterprise/remi-release-7.rpm 
+      state: present
+      update_cache: yes
+
+  # - name: enable remi-php74
+  #   shell: yum-config-manager --enable remi-php74
+
+  - name: Enable remi-php74
+    yum_repository:
+      name: remi-php74
+      description: Remi's PHP 7.4 RPM repository for Linux 7 - $basearch
+      baseurl: https://rpms.remirepo.net/enterprise/7/php74/$basearch/
+      enabled: yes
+      gpgcheck: 1
+      gpgkey: http://rpms.remirepo.net/RPM-GPG-KEY-remi
+  
+  - name: Download Wordpress
+    get_url:
+      url: https://wordpress.org/latest.tar.gz
+      dest: /tmp/latest.tar.gz
+    #when: file_check.stat.exists == false
+
+  - name: Extract wordpress
+    unarchive:
+      src: /tmp/latest.tar.gz
+      dest: /var/www/html/
+      remote_src: yes
+    notify: Restart Apache
+    #when: file_check.stat.exists == false
+
+  - name: Change ownership of files
+    file:
+      path: /var/www/html/
+      owner: apache
+      group: apache
+      mode: '0644'
+
+  - name: Start service Apache, if not started
     service:
       name: httpd
       state: started
       enabled: yes
 
-  - name: Gather Package facts
-    package_facts: manager=auto
-  - name: Validate whether multiple packages are installed or not.
-    debug: msg="Packages are installed"
-    when: "{{ item }}' in ansible_facts.packages"
+  handlers:
+    - name: Restart apache
+      service:
+        name: httpd
+        state: restarted 
+  
 
+ 
   
 
   
